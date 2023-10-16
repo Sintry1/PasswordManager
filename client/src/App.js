@@ -1,9 +1,18 @@
 import "./App.css";
 import { useState } from "react";
+import Axios from 'axios';
 
 function App() {
-  const [site, setSite] = useState("");
-  const [password, setPassword] = useState("");
+  const [site, setSite] = useState('');
+  const [password, setPassword] = useState('');
+
+
+  const addPassword = () => {
+    Axios.post('http://localhost:3005/addpassword', {
+      site: site, 
+      password: password
+    });
+  };
 
   return (
     <div className="App">
@@ -18,11 +27,11 @@ function App() {
         <input
           type="password"
           placeholder="Examplepassword123"
-          onChange={(event) => {
-            setPassword(event.password.value);
+          onChange={(event) =>{
+            setPassword(event.target.value);
           }}
         />
-        <button>Add password</button>
+        <button onClick={addPassword}>Add password</button>
       </div>
     </div>
   );
