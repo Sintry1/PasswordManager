@@ -1,7 +1,9 @@
 const crypto = require("crypto");
 
 // Secret needs to be 32 characters long
-const secret = crypto.randomBytes(32);
+const secret = crypto.randomBytes(32, (err, buff) => {
+
+});
 
 // Buffers are "waiting areas" where data waits to be streamed.
 const encrypt = (password) => {
@@ -10,7 +12,7 @@ const encrypt = (password) => {
 
   const encryptedPassword = Buffer.concat([
     cipher.update(password),
-    cipher.final(),
+    cipher.final("hex"),
   ]);
 
   return {
