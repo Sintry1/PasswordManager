@@ -9,6 +9,8 @@ const PORT = 3005;
 // Allows us to access out environment variables
 require("dotenv").config();
 
+const {encrypt, decrypt} = require("./EncryptionHandler");
+
 app.use(cors());
 app.use(express.json());
 
@@ -22,9 +24,11 @@ const db = mysql.createConnection({
 app.post("/addpassword", (req, res) => {
   const { site, password } = req.body;
 
+  const hashedPassword = encrypt(password)
+
   db.query(
-    "INSERT INTO passwords (site, password) VALUES (?, ?)",
-    [site, password],
+    "INSERT INTO passwords (site, password, iv) VALUES (?, ?, ?)",
+    [site, hashedPassword.password, hashedPassword.iv],
     (err, result) => {
       if (err) {
         console.log(err);
