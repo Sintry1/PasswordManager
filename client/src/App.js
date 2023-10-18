@@ -7,6 +7,7 @@ function App() {
   const [password, setPassword] = useState("");
   const [passwordList, setPasswordList] = useState([]);
 
+
   // The empty array means the useEffect is only called when the page re-renders, and not every time there is a state change
   useEffect(() => {
     Axios.get("http://localhost:3005/getpasswords").then((response) => {
@@ -15,11 +16,19 @@ function App() {
   }, []);
 
   const addPassword = () => {
+    console.log("Adding password...");
     Axios.post("http://localhost:3005/addpassword", {
       site: site,
       password: password,
-    }).then((response) => {
-      console.log(response.data);
+    }).then(() => {
+      console.log("Password added successfully.");
+      // Update the password list
+      Axios.get("http://localhost:3005/getpasswords").then((response) => {
+        setPasswordList(response.data);
+      });
+
+      // Clear the input fields by refreshing the page
+      window.location.reload();
     });
   };
 
@@ -28,7 +37,18 @@ function App() {
       password: encryption.password,
       iv: encryption.iv,
     }).then((response) => {
-      console.log(response.data);
+      setPasswordList(
+        passwordList.map((value) => {
+          return value.id === encryption.id
+            ? {
+                id: value.id,
+                password: value.password,
+                site: response.data,
+                iv: value.iv,
+              }
+            : value;
+        })
+      );
     });
   };
 
@@ -51,7 +71,7 @@ function App() {
         />
         <button onClick={addPassword}>Add password</button>
       </div>
-      <div className="passwords">
+      <div className="Passwords">
         {passwordList.map((value, key) => {
           return (
             <div
@@ -60,6 +80,7 @@ function App() {
                 decryptPassword({
                   password: value.password,
                   iv: value.iv,
+                  id: value.id,
                 });
               }}
               key={key}
