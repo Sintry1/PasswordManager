@@ -1,18 +1,16 @@
 const crypto = require("crypto");
 
 // Secret needs to be 32 characters long
-const secret = crypto.randomBytes(32, (err, buff) => {
-
-});
+const secret = crypto.randomBytes(32);
 
 // Buffers are "waiting areas" where data waits to be streamed.
 const encrypt = (password) => {
-  const iv = Buffer.from(crypto.randomBytes(32));
-  const cipher = crypto.createCipheriv("aes-256-gcm", Buffer.from(secret), iv);
+  const iv = Buffer.from(crypto.randomBytes(16));
+  const cipher = crypto.createCipheriv("aes-256-ctr", Buffer.from(secret), iv);
 
   const encryptedPassword = Buffer.concat([
     cipher.update(password),
-    cipher.final("hex"),
+    cipher.final(),
   ]);
 
   return {
@@ -23,8 +21,8 @@ const encrypt = (password) => {
 
 const decrypt = (encryption) => {
   const decipher = crypto.createDecipheriv(
-    "aes-256-gcm",
-    Buffer.from(secret),
+    "aes-256-ctr",
+    Buffer.from(secret, "hex"),
     Buffer.from(encryption.iv, "hex")
   );
 

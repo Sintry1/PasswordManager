@@ -21,10 +21,21 @@ const db = mysql.createConnection({
   database: process.env.DATABASE,
 });
 
+app.get('/getpasswords', (req, res) => {
+  db.query(
+    "SELECT * FROM passwords;", (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+      res.send(result)
+      }
+    })
+})
+
 app.post("/addpassword", (req, res) => {
   const { site, password } = req.body;
 
-  const hashedPassword = encrypt(password)
+  const hashedPassword = encrypt(password);
 
   db.query(
     "INSERT INTO passwords (site, password, iv) VALUES (?, ?, ?)",
@@ -37,6 +48,10 @@ app.post("/addpassword", (req, res) => {
       }
     }
   );
+});
+
+app.post("/decryptpassword", (req, res) => {
+  res.send(decrypt(req.body));
 });
 
 app.listen(PORT, () => {
