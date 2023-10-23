@@ -14,23 +14,15 @@ const {encrypt, decrypt} = require("./EncryptionHandler");
 app.use(cors());
 app.use(express.json());
 
-const passwordsDb = mysql.createConnection({
-  user: process.env.PASSWORDS_USER,
-  host: process.env.PASSWORDS_HOST,
-  password: process.env.PASSWORDS_PASSWORD,
-  database: process.env.PASSWORDS_DATABASE,
+const db = mysql.createConnection({
+  user: process.env.USER,
+  host: process.env.HOST,
+  password: process.env.PASSWORD,
+  database: process.env.DATABASE,
 });
-
-const usersDb = mysql.createConnection({
-  user: process.env.USERS_USER,
-  host: process.env.USERS_HOST,
-  password: process.env.USERS_PASSWORD,
-  database: process.env.USERS_DATABASE,
-});
-
 
 app.get('/getpasswords', (req, res) => {
-  passwordsDb.query(
+  db.query(
     "SELECT * FROM passwords;", (err, result) => {
       if (err) {
         console.log(err);
@@ -45,7 +37,7 @@ app.post("/addpassword", (req, res) => {
 
   const hashedPassword = encrypt(password);
 
-  passwordsDb.query(
+  db.query(
     "INSERT INTO passwords (site, password, iv) VALUES (?, ?, ?)",
     [site, hashedPassword.password, hashedPassword.iv],
     (err, result) => {

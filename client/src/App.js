@@ -7,8 +7,6 @@ function App() {
   const [password, setPassword] = useState("");
   const [passwordList, setPasswordList] = useState([]);
 
-  
-
 
   // The empty array means the useEffect is only called when the page re-renders, and not every time there is a state change
   useEffect(() => {
