@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "react-auth-kit": "^3.0.0-alpha.18",
-    "react-router-dom": "^6.17.0",
-    "styled-components": "^6.1.0"
-  }
-}

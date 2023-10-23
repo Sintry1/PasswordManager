@@ -1,5 +1,7 @@
 const crypto = require("crypto");
-const secret = crypto.randomBytes(16).toString('hex');
+const config = require('./config');
+const secret = config.secret;
+
 
 const encrypt = (password) => {
   const iv = Buffer.from(crypto.randomBytes(16));
@@ -16,6 +18,31 @@ const encrypt = (password) => {
   };
 };
 
+
+const generateStrongPassword = (length = 12) => {
+  // Define character sets for each character type
+  const lowercaseChars = "abcdefghijklmnopqrstuvwxyz";
+  const uppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const digitChars = "0123456789";
+  const specialChars = '!@#$%^&*()_+{}[]|:"<>?-=/\\';
+
+  // Combine character sets to create the full character pool
+  const allChars = lowercaseChars + uppercaseChars + digitChars + specialChars;
+
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    // Randomly select a character from the character pool
+    const randomIndex = Math.floor(Math.random() * allChars.length);
+    password += allChars.charAt(randomIndex);
+  }
+
+  return password;
+};
+
+// Example: Generate a strong password of length 16
+const strongPassword = generateStrongPassword(16);
+console.log("StrongPassword: ", strongPassword);
+
 const decrypt = (encryption) => {
   const decipher = crypto.createDecipheriv(
     "aes-256-ctr",
@@ -30,5 +57,6 @@ const decrypt = (encryption) => {
 
   return decryptedPassword.toString();
 };
+
 
 module.exports = { encrypt, decrypt };

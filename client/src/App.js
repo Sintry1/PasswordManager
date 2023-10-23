@@ -1,8 +1,6 @@
 import "./App.css";
 import { useState, useEffect } from "react";
 import Axios from "axios";
-import { Login } from "./Login";
-import { Register } from "./Register";
 
 function App() {
   const [site, setSite] = useState("");
@@ -20,12 +18,10 @@ function App() {
   }, []);
 
   const addPassword = () => {
-    console.log("Adding password...");
     Axios.post("http://localhost:3005/addpassword", {
       site: site,
       password: password,
     }).then(() => {
-      console.log("Password added successfully.");
       // Update the password list
       Axios.get("http://localhost:3005/getpasswords").then((response) => {
         setPasswordList(response.data);
@@ -97,5 +93,4 @@ function App() {
     </div>
   );
 }
-
 export default App;
