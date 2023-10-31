@@ -1,6 +1,6 @@
 const crypto = require("crypto");
 const config = require('./config');
-const secret = config.secret;
+const bcrypt = require("bcrypt");
 
 
 const encrypt = (password) => {
@@ -19,7 +19,7 @@ const encrypt = (password) => {
 };
 
 
-const generateStrongPassword = (length = 12) => {
+const generateStrongPassword = (length = 32) => {
   // Define character sets for each character type
   const lowercaseChars = "abcdefghijklmnopqrstuvwxyz";
   const uppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -40,8 +40,8 @@ const generateStrongPassword = (length = 12) => {
 };
 
 // Example: Generate a strong password of length 16
-const strongPassword = generateStrongPassword(16);
-console.log("StrongPassword: ", strongPassword);
+// const strongPassword = generateStrongPassword();
+// console.log("StrongPassword: ", strongPassword);
 
 const decrypt = (encryption) => {
   const decipher = crypto.createDecipheriv(
@@ -57,6 +57,10 @@ const decrypt = (encryption) => {
 
   return decryptedPassword.toString();
 };
+
+const hashPassword = (username, password) => {
+
+}
 
 
 module.exports = { encrypt, decrypt };

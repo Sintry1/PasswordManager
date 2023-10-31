@@ -1,12 +1,14 @@
 import "./App.css";
 import { useState, useEffect } from "react";
 import Axios from "axios";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import PasswordVault from "./pages/PasswordVault";
 
 function App() {
   const [site, setSite] = useState("");
   const [password, setPassword] = useState("");
   const [passwordList, setPasswordList] = useState([]);
-
 
   // The empty array means the useEffect is only called when the page re-renders, and not every time there is a state change
   useEffect(() => {
@@ -52,7 +54,14 @@ function App() {
 
   return (
     <div className="App">
-      <div className="addPassword">
+      <BrowserRouter>
+        <Routes>
+          <Route index element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/vault" element={<PasswordVault />} />
+        </Routes>
+      </BrowserRouter>
+      {/* <div className="addPassword">
         <input
           type="text"
           placeholder="Example site 123"
@@ -87,7 +96,7 @@ function App() {
             </div>
           );
         })}
-      </div>
+      </div> */}
     </div>
   );
 }
