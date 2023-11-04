@@ -10,71 +10,59 @@ require("dotenv").config();
 
 const {
   loadUsers,
-  hashMasterPassword,
   createUser,
-  saveUsers,
-  authenticateLogin,
   loadPasswords,
-  savePasswords,
+  addPassword,
   login,
   generateStrongPassword,
-  encryptPassword,
   decryptPassword,
 } = require("./EncryptionHandler");
 
 app.use(cors());
 app.use(express.json());
 
-// const db = mysql.createConnection({
-//   user: process.env.USER,
-//   host: process.env.HOST,
-//   password: process.env.PASSWORD,
-//   database: process.env.DATABASE,
-// });
-
-app.get("/getusers", (req, res) => {
+app.get("/loadUsers", (req, res) => {
   loadUsers();
+  res.send("Users loaded successfully.");
 });
 
-app.post("/createuser", (req, res) => {
-  createUser(req.body);
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  const loggedIn = login(username, password);
+  if (loggedIn) {
+    res.send("Login successful");
+  } else {
+    res.status(401).send("Login failed. please try again.");
+  }
 });
 
-app.post("/saveusers", (req, res) => {
-  saveUsers(req.body);
+app.post("/createUser", (req, res) => {
+  const { username, password } = req.body;
+  createUser(username, password);
+  res.send("User created successfully.");
 });
 
-app.get("/getpasswords", (req, res) => {
-  // db.query(
-  //   "SELECT * FROM passwords;", (err, result) => {
-  //     if (err) {
-  //       console.log(err);
-  //     } else {
-  //     res.send(result)
-  //     }
-  //   })
+app.get("/loadPasswords", (req, res) => {
+  loadPasswords();
+  res.send("Passwords loaded successfully.");
 });
 
-app.post("/addpassword", (req, res) => {
+app.post("/addPassword", (req, res) => {
   const { site, password } = req.body;
-
-  const hashedPassword = encryptPassword(password);
-
-  // db.query(
-  //   "INSERT INTO passwords (site, password, iv) VALUES (?, ?, ?)",
-  //   [site, hashedPassword.password, hashedPassword.iv],
-  //   (err, result) => {
-  //     if (err) {
-  //       console.log(err);
-  //     } else {
-  //       res.send("Success!");
-  //     }
-  //   }
-  // );
+  addPassword(site, password);
+  res.send("Password created successfully");
 });
 
-app.post("/decryptpassword", (req, res) => {
-  res.send(decryptPassword(req.body));
+app.post("/generateStrongPassword", (req, res) => {
+  const strongPassword = generateStrongPassword();
+  res.send("Generated strong password: ", strongPassword);
+});
+
+app.post("/decryptPassword", (req, res) => {
+  const site = req.body.site;
+  const encryptedPassword = passwordList[site].password;
+  const decryptedPassword = decryptPassword(encryptedPassword);
+  res.send("Decrypted Password: ", decryptedPassword);
 });
 
 app.listen(PORT, () => {

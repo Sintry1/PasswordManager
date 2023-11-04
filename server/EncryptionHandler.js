@@ -12,7 +12,7 @@ const userInfoDir = path.join(__dirname, "User_Information");
 
 // TESTED AND WORKING
 const loadUsers = () => {
-  const userDataPath = path.join(userInfoDir, "userData.json")
+  const userDataPath = path.join(userInfoDir, "userData.json");
   // Check if the userData file exists and load it if so.
   if (fs.existsSync(userDataPath)) {
     try {
@@ -47,10 +47,10 @@ const createUser = (username, password) => {
 const saveUsers = (users) => {
   try {
     let existingUsers = {};
-    if (!fs.existsSync(userInfoDir)){
-      fs.mkdirSync(userInfoDir, {recursive: true})
+    if (!fs.existsSync(userInfoDir)) {
+      fs.mkdirSync(userInfoDir, { recursive: true });
     }
-    const userDataPath = path.join(userInfoDir, "userData.json")
+    const userDataPath = path.join(userInfoDir, "userData.json");
     if (fs.existsSync(userDataPath)) {
       const json = fs.readFileSync(userDataPath, "utf-8");
       existingUsers = JSON.parse(json);
@@ -73,7 +73,6 @@ const saveUsers = (users) => {
     );
   }
 };
-
 
 // TESTED AND WORKING
 const hashMasterPassword = (password) => {
@@ -98,9 +97,9 @@ const authenticateLogin = (username, password) => {
 const login = (username, password) => {
   loadUsers();
   if (authenticateLogin(username, password)) {
-    const userDir = path.join(userInfoDir, "users", username)
+    const userDir = path.join(userInfoDir, "users", username);
     if (!fs.existsSync(userDir)) {
-      fs.mkdirSync(userDir, {recursive: true});
+      fs.mkdirSync(userDir, { recursive: true });
     }
 
     // Check if the user's key exists in a file
@@ -111,10 +110,16 @@ const login = (username, password) => {
       // Generate a new key for the user
       const secret = username + password;
       const salt = crypto.randomBytes(16);
-      keyStorage[username] = crypto.pbkdf2Sync(secret, salt, 100000, 32, "sha256").toString("base64");
+      keyStorage[username] = crypto
+        .pbkdf2Sync(secret, salt, 100000, 32, "sha256")
+        .toString("base64");
 
       // Save the user's key to a file
-      fs.writeFileSync(keyPath, JSON.stringify({ key: keyStorage[username] }), "utf-8");
+      fs.writeFileSync(
+        keyPath,
+        JSON.stringify({ key: keyStorage[username] }),
+        "utf-8"
+      );
     }
 
     key = keyStorage[username]; // Use the stored key
@@ -137,14 +142,18 @@ const generateStrongPassword = (length = 32) => {
     const randomIndex = Math.floor(Math.random() * chars.length);
     password += chars.charAt(randomIndex);
   }
-  console.log("PASSWORD: ", password);
   return password;
 };
 
 // TESTED AND WORKING
 // Loads passwords
-const loadPasswords = (key) => {
-  const passwordsPath = path.join(userInfoDir, "users", currentUser, `${currentUser}_passwords.json`);
+const loadPasswords = () => {
+  const passwordsPath = path.join(
+    userInfoDir,
+    "users",
+    currentUser,
+    `${currentUser}_passwords.json`
+  );
   if (fs.existsSync(passwordsPath)) {
     try {
       const json = fs.readFileSync(passwordsPath, "utf8");
@@ -162,25 +171,22 @@ const loadPasswords = (key) => {
 // Save passwords
 const savePasswords = (passwordList) => {
   try {
-    const passwordsPath = path.join(userInfoDir, "users", currentUser, `${currentUser}_passwords.json`);
+    const passwordsPath = path.join(
+      userInfoDir,
+      "users",
+      currentUser,
+      `${currentUser}_passwords.json`
+    );
     let existingPasswords = {};
     if (fs.existsSync(passwordsPath)) {
       const json = fs.readFileSync(passwordsPath, "utf-8");
       existingPasswords = JSON.parse(json);
       Object.assign(existingPasswords, passwordList);
       const updatedPasswords = JSON.stringify(existingPasswords, null, 2);
-      fs.writeFileSync(
-        passwordsPath,
-        updatedPasswords,
-        "utf-8"
-      );
+      fs.writeFileSync(passwordsPath, updatedPasswords, "utf-8");
     } else {
       const updatedPasswords = JSON.stringify(passwordList, null, 2);
-      fs.writeFileSync(
-        passwordsPath,
-        updatedPasswords,
-        "utf-8"
-      );
+      fs.writeFileSync(passwordsPath, updatedPasswords, "utf-8");
     }
   } catch (error) {
     console.error(
@@ -193,7 +199,7 @@ const savePasswords = (passwordList) => {
 const addPassword = (site, password) => {
   loadPasswords();
   if (passwordList[site]) {
-    console.log("A password for this site already exists.");
+    console.log(`A password for ${site} already exists.`);
   } else {
     const encryptedPassword = encryptPassword(password);
     passwordList[site] = {
@@ -204,7 +210,6 @@ const addPassword = (site, password) => {
     console.log("Password successfully added to the file.");
   }
 };
-
 
 // TESTED AND WORKING
 const encryptPassword = (password) => {
@@ -226,13 +231,13 @@ const encryptPassword = (password) => {
   };
 };
 
-
 // TESTED AND WORKING
 const decryptPassword = (encryption) => {
+  const iv = Buffer.from(encryption.iv, "hex");
   const decipher = crypto.createDecipheriv(
     "aes-256-ctr",
     Buffer.from(key, "base64"),
-    Buffer.from(encryption.iv, "hex")
+    iv
   );
 
   const decryptedPassword = Buffer.concat([
@@ -245,25 +250,29 @@ const decryptPassword = (encryption) => {
 
 // createUser("Sintry", "Sintry")
 login("Sintry", "Sintry");
+console.log(key);
 addPassword("TikTok", generateStrongPassword());
-decryptPassword(passwordList["TikTok"].password);
-
-
-// Example: Generate a strong password of length 16
-// const strongPassword = generateStrongPassword();
-// console.log("StrongPassword: ", strongPassword);
+addPassword("Facebook", generateStrongPassword());
+addPassword("Instagram", generateStrongPassword());
+console.log(
+  "Tikky T Password: ",
+  decryptPassword(passwordList["TikTok"].password)
+);
+console.log(
+  "Facebook Password: ",
+  decryptPassword(passwordList["Facebook"].password)
+);
+console.log(
+  "Instagram Password: ",
+  decryptPassword(passwordList["Instagram"].password)
+);
 
 module.exports = {
   loadUsers,
-  hashMasterPassword,
   createUser,
-  saveUsers,
-  authenticateLogin,
   loadPasswords,
-  savePasswords,
+  addPassword,
   login,
   generateStrongPassword,
-  encryptPassword,
   decryptPassword,
 };
-
