@@ -10,7 +10,7 @@ require("dotenv").config();
 
 const {
   loadUsers,
-  encryptMasterPassword,
+  hashMasterPassword,
   createUser,
   saveUsers,
   authenticateLogin,
@@ -19,7 +19,7 @@ const {
   login,
   generateStrongPassword,
   encryptPassword,
-  decryptPassword
+  decryptPassword,
 } = require("./EncryptionHandler");
 
 app.use(cors());
@@ -34,15 +34,15 @@ app.use(express.json());
 
 app.get("/getusers", (req, res) => {
   loadUsers();
-})
+});
 
 app.post("/createuser", (req, res) => {
-  createUser(req.body)
-})
+  createUser(req.body);
+});
 
 app.post("/saveusers", (req, res) => {
   saveUsers(req.body);
-})
+});
 
 app.get("/getpasswords", (req, res) => {
   // db.query(
