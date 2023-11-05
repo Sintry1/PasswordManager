@@ -7,7 +7,6 @@ let users = {};
 let currentUser = "";
 let passwordList = {};
 let key = null;
-const keyStorage = {};
 const userInfoDir = path.join(__dirname, "User_Information");
 
 // TESTED AND WORKING
@@ -105,28 +104,41 @@ const login = (username, password) => {
     // Check if the user's key exists in a file
     const keyPath = path.join(userDir, `${username}_key.json`);
     if (fs.existsSync(keyPath)) {
-      keyStorage[username] = JSON.parse(fs.readFileSync(keyPath, "utf-8")).key;
+      key = JSON.parse(fs.readFileSync(keyPath, "utf-8")).key;
     } else {
       // Generate a new key for the user
       const secret = username + password;
       const salt = crypto.randomBytes(16);
-      keyStorage[username] = crypto
+      key = crypto
         .pbkdf2Sync(secret, salt, 100000, 32, "sha256")
         .toString("base64");
 
       // Save the user's key to a file
-      fs.writeFileSync(
-        keyPath,
-        JSON.stringify({ key: keyStorage[username] }),
-        "utf-8"
-      );
+      fs.writeFileSync(keyPath, JSON.stringify({ key: key }), "utf-8");
     }
 
-    key = keyStorage[username]; // Use the stored key
     currentUser = username;
     console.log("Login Successful.");
+    return true;
   } else {
     console.log("Login failed. Please try again.");
+    return null;
+  }
+};
+
+const getEncryptionKey = (username) => {
+  const keyPath = path.join(
+    userInfoDir,
+    "users",
+    username,
+    `${username}key.json`
+  );
+  if (fs.existsSync(keyPath)) {
+    const keyContents = fs.readFileSync(keyPath, "utf-8");
+    const keyData = JSON.parse(keyContents);
+    return keyData.key;
+  } else {
+    console.log("Decryption key not found");
     return null;
   }
 };
@@ -213,6 +225,17 @@ const addPassword = (site, password) => {
 
 // TESTED AND WORKING
 const encryptPassword = (password) => {
+  if (key === null) {
+    // If the encryption key is not already loaded, load it from the global variable
+    key = getEncryptionKey(currentUser);
+  }
+
+  if (!key) {
+    // Handle the case where the key is not available.
+    console.log("Ya done fucked up boy in the encryption");
+    return null; // or throw an error, return a default password, etc.
+  }
+
   const iv = Buffer.from(crypto.randomBytes(16));
   const cipher = crypto.createCipheriv(
     "aes-256-ctr",
@@ -233,6 +256,17 @@ const encryptPassword = (password) => {
 
 // TESTED AND WORKING
 const decryptPassword = (encryption) => {
+  if (key === null) {
+    // If the encryption key is not already loaded, load it from the global variable
+    key = getEncryptionKey(currentUser);
+  }
+
+  if (!key) {
+    // Handle the case where the key is not available.
+    console.log("Ya done fucked up boy in the decryption");
+    return null; // or throw an error, return a default password, etc.
+  }
+
   const iv = Buffer.from(encryption.iv, "hex");
   const decipher = crypto.createDecipheriv(
     "aes-256-ctr",
@@ -248,24 +282,26 @@ const decryptPassword = (encryption) => {
   return decryptedPassword.toString("utf-8");
 };
 
-// createUser("Sintry", "Sintry")
-login("Sintry", "Sintry");
-console.log(key);
-addPassword("TikTok", generateStrongPassword());
-addPassword("Facebook", generateStrongPassword());
-addPassword("Instagram", generateStrongPassword());
-console.log(
-  "Tikky T Password: ",
-  decryptPassword(passwordList["TikTok"].password)
-);
-console.log(
-  "Facebook Password: ",
-  decryptPassword(passwordList["Facebook"].password)
-);
-console.log(
-  "Instagram Password: ",
-  decryptPassword(passwordList["Instagram"].password)
-);
+// login("Sintry", "Sintry");
+// console.log("Key: ", key);
+// addPassword("TikTok", generateStrongPassword());
+// addPassword("Facebook", generateStrongPassword());
+// addPassword("Instagram", generateStrongPassword());
+// console.log(
+//   "Tikky T Password: ",
+//   decryptPassword(passwordList["TikTok"].password)
+// );
+// console.log("Key: ", key);
+// console.log(
+//   "Facebook Password: ",
+//   decryptPassword(passwordList["Facebook"].password)
+// );
+// console.log("Key: ", key);
+// console.log(
+//   "Instagram Password: ",
+//   decryptPassword(passwordList["Instagram"].password)
+// );
+// console.log("Key: ", key);
 
 module.exports = {
   loadUsers,
