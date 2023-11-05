@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const fs = require("fs");
 const path = require("path");
+const { log } = require("console");
 
 let users = {};
 let currentUser = "";
@@ -159,23 +160,25 @@ const generateStrongPassword = (length = 32) => {
 
 // TESTED AND WORKING
 // Loads passwords
-const loadPasswords = () => {
-  const passwordsPath = path.join(
+const loadPasswords = (username) => {
+    const passwordsPath = path.join(
     userInfoDir,
     "users",
     currentUser,
-    `${currentUser}_passwords.json`
+    `${username}_passwords.json`
   );
+  console.log(passwordsPath);
   if (fs.existsSync(passwordsPath)) {
     try {
       const json = fs.readFileSync(passwordsPath, "utf8");
       passwordList = JSON.parse(json);
+      return passwordList;
     } catch (error) {
       console.error("Error reading or parsing the JSON file: ", error);
-      passwordList = {};
+      return passwordList;
     }
   } else {
-    passwordList = {};
+    return passwordList;
   }
 };
 
@@ -282,7 +285,8 @@ const decryptPassword = (encryption) => {
   return decryptedPassword.toString("utf-8");
 };
 
-// login("Sintry", "Sintry");
+//login("Sintry", "Sintry");
+// console.log("Current User is: ", currentUser);
 // console.log("Key: ", key);
 // addPassword("TikTok", generateStrongPassword());
 // addPassword("Facebook", generateStrongPassword());

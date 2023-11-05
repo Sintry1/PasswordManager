@@ -2,7 +2,7 @@ import "./Login.css";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Axios from "axios";
-import { jwtDecode } from "jwt-decode";
+// import { jwtDecode } from "jwt-decode";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -36,28 +36,48 @@ export default function Login() {
 
   const login = (username, password) => {
     Axios.post("http://localhost:3005/login", {
-      username: username,
-      password: password,
-    }).then((response) => {
-      console.log("Reponse: ", response.data);
-      if (response.data && response.data.token) {
-        console.log("Token on client side: ", response.data.token);
-        document.cookie = "token=" + response.data.token + "; path=/;";
-        console.log("Cookie set:", document.cookie.token);
-        const cookies = document.cookie.split("; ");
-        const tokenCookie = cookies.find((cookie) =>
-          cookie.startsWith("token=")
-        );
-        if (tokenCookie) {
-          const token = tokenCookie.split("=")[1];
-          console.log("Token from cookies: ", token);
-          const decoded = jwtDecode(token);
-          setAuthenticated(true);
-          navigate(`/password-vault/${decoded.username}`);
-        }
+    username: username,
+    password: password,
+  })
+    .then((response) => {
+      console.log("logged in:", response.data.loggedIn);
+      if (response.data.loggedIn){
+        console.log(`login successful for username: ${username}`);
+        navigate(`/password-vault/${username}`);
       }
+
+      // if (response.status === 200) {
+      //   // Successful login, navigate to the new page.
+      //   console.log("Redirecting to the new page...");
+      //   navigate(`/password-vault/${username}`);
+      // } else {
+      //   // Handle unsuccessful login here, if needed.
+      //   console.log("Login unsuccessful.");
+      // }
+    })
+    .catch((error) => {
+      // Handle errors or unsuccessful login here.
+      console.error("Error during login:", error);
     });
-  };
+};
+    //   if (response.data && response.data.token) {
+    //     console.log("Token on client side: ", response.data.token);
+    //     document.cookie = "token=" + response.data.token + "; path=/;";
+    //     console.log("Cookie set:", document.cookie.token);
+    //     const cookies = document.cookie.split("; ");
+    //     const tokenCookie = cookies.find((cookie) =>
+    //       cookie.startsWith("token=")
+    //     );
+    //     if (tokenCookie) {
+    //       const token = tokenCookie.split("=")[1];
+    //       console.log("Token from cookies: ", token);
+    //       const decoded = jwtDecode(token);
+    //       setAuthenticated(true);
+    //       navigate(`/password-vault/${decoded.username}`);
+    //     }
+    //   }
+    // });
+  //};
 
   return (
     <div>

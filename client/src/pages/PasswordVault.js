@@ -1,42 +1,48 @@
-import { useState, useEffect } from "react";
 import Axios from "axios";
-import { jwtDecode } from "jwt-decode";
-import { parse } from "cookie";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+// import { jwtDecode } from "jwt-decode";
+// import { parse } from "cookie";
 
 export default function PasswordVault() {
-  const [ username, setUsername ] = useState(null);
   const [site, setSite] = useState("");
   const [password, setPassword] = useState("");
   const [passwordList, setPasswordList] = useState([]);
   const [decryptedPasswordList, setDecryptedPasswordList] = useState([]);
+  const {username} = useParams();
 
   useEffect(() => {
-    Axios.get("http://localhost:3005/loadPasswords").then((response) => {
+    console.log("Axios request not yet made",username)
+    Axios.get(`http://localhost:3005/loadPasswords/${username}`).then((response) => {
       setPasswordList(response.data);
-    });
-
-    // Retrieve the JWT token from the cookie
-    const cookies = parse(document.cookie); // Parse the document's cookies
-    const token = cookies.token; // Replace 'token' with your actual cookie name
-
-    if (token) {
-      // Call the function to retrieve the username from the JWT
-      const retrievedUsername = retrieveUsernameFromJWT(token);
-      if (retrievedUsername) {
-        setUsername(retrievedUsername);
+      console.log(username);
+      if (response.data.length > 0) {
+        decryptAllPasswords();
       }
-    }
-  }, []);
+    });
+  }, [username]);
+    // // Retrieve the JWT token from the cookie
+    // const cookies = parse(document.cookie); // Parse the document's cookies
+    // const token = cookies.token; // Replace 'token' with your actual cookie name
 
-  const retrieveUsernameFromJWT = (token) => {
-    try {
-      const decoded = jwtDecode(token);
-      setUsername(decoded.username);
-    } catch (error) {
-      console.error("Error decoding JWT: ", error);
-      return null;
-    }
-  };
+    // if (token) {
+    //   // Call the function to retrieve the username from the JWT
+    //   const retrievedUsername = retrieveUsernameFromJWT(token);
+    //   if (retrievedUsername) {
+    //     setUsername(retrievedUsername);
+    //   }
+    // }
+  
+
+  // const retrieveUsernameFromJWT = (token) => {
+  //   try {
+  //     const decoded = jwtDecode(token);
+  //     setUsername(decoded.username);
+  //   } catch (error) {
+  //     console.error("Error decoding JWT: ", error);
+  //     return null;
+  //   }
+  // };
 
   const addPassword = (site, password) => {
     Axios.post("http://localhost:3005/addPassword", {
@@ -64,17 +70,26 @@ export default function PasswordVault() {
   };
 
   const decryptAllPasswords = () => {
-    // Use Promise.all to decrypt all passwords in parallel
-    Promise.all(
-      passwordList.map((passwordData) => decryptPassword(passwordData.site))
-    )
+    const decryptionList = Object.keys(passwordList);
+    console.log(decryptionList);
+    // Initialize an array to store promises
+    const decryptionPromises = decryptionList.map((site) => {
+      return Axios.post("http://localhost:3005/decryptPassword", {
+        site: site,
+      })
+        .then((response) => {
+          return { site: site, password: response.data };
+        })
+        .catch((error) => {
+          console.error(`Error decrypting password for ${site}: `, error);
+          return { site: site, password: "Decryption Error" };
+        });
+    });
+
+    Promise.all(decryptionPromises)
       .then((decryptedPasswords) => {
-        // Update the passwordList with decrypted passwords
-        const updatedPasswordList = passwordList.map((passwordData, index) => ({
-          ...passwordData,
-          password: decryptedPasswords[index],
-        }));
-        setDecryptedPasswordList(updatedPasswordList);
+        console.log("Decrypted Passwords:", decryptedPasswords);
+        setDecryptedPasswordList(decryptedPasswords);
       })
       .catch((error) => {
         console.error("Error decrypting passwords: ", error);
@@ -86,8 +101,8 @@ export default function PasswordVault() {
       (response) => {
         const strongPassword = response.data;
         alert(
-          "Here is your strong password. Copy it to the password field: ",
-          strongPassword
+          "Here is your strong password. Copy it to the password field: " +
+            strongPassword
         );
       }
     );
@@ -103,14 +118,12 @@ export default function PasswordVault() {
         <input
           type="text"
           placeholder="site"
-          value={site}
           onChange={(e) => setSite(e.target.value)}
         />
         <input
           type="text"
-          placeholder="password"
-          value={password}
-          onChange={(e) => setSite(e.target.value)}
+          placeholder="Password"
+          onChange={(e) => setPassword(e.target.value)}
         />
         <button onClick={generateStrongPassword}>
           Generate a strong password
@@ -122,10 +135,39 @@ export default function PasswordVault() {
       <div>
         <button onClick={decryptAllPasswords}>Decrypt all Passwords</button>
         <ul>
-          {decryptedPasswordList.map((passwordData, index) => (
-            <li key={index}>Site: {passwordData.password.password}</li>
-          ))}
+          {decryptedPasswordList.length > 0 ? (
+            decryptedPasswordList.map((entry, index) => (
+              <li key={index}>
+                Site: {entry.site}
+                <br />
+                Decrypted Password: {entry.password.decryptedPassword}
+              </li>
+            ))
+          ) : (
+            <li>
+              No decrypted passwords available. Click the button to decrypt.
+            </li>
+          )}
         </ul>
+      </div>
+      <div>
+        <h1>Password List</h1>
+        <table>
+          <thead>
+            <tr>
+              <th>Site</th>
+              <th>Password</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.keys(passwordList).map((site, index) => (
+              <tr key={index}>
+                <td>{passwordList[site].site}</td>
+                <td>{passwordList[site].password.password}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
