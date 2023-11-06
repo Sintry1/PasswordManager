@@ -11,6 +11,7 @@ Once done, in both terminals write 'npm start'. I would suggest starting the ser
 
 This project runs nodemon to restart the server, so any accidental changes in the EncryptionHandler.js or index.js in the server will reload the server (even adding a whitespace character).
 
+![image](https://github.com/Sintry1/PasswordManager/assets/75076281/b4f47325-1c88-45b6-bda7-3148b33ce930)
 
 
 DISCUSSION OF SECURITY TO COME
