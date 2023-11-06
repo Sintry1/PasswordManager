@@ -32,7 +32,7 @@ Overall, while the password manager works and will store the passwords in their 
 
 First and foremost, exposure of the data in the payload would need to be prevented by implementing something like OAuth and OpenId Connect. 
 
-Second, as the data is stored in json files, it would be more secure if the data were stored in a database and the database inputs sanitised to ensure that not SQL Injection attacks could take place.
+Second, as the data is stored in JSON files, it would be more secure if the data were stored in a database and the database inputs sanitised to ensure that not SQL Injection attacks could take place.
 
 Third, the data should be encrypted before it is sent from the client to the server. An attempt was made at this, but without enough time to properly debug it, I could not get it to work.
 
