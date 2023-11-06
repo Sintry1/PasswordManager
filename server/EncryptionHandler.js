@@ -2,7 +2,6 @@ const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const fs = require("fs");
 const path = require("path");
-const { log } = require("console");
 
 let users = {};
 let currentUser = "";
@@ -117,6 +116,11 @@ const login = (username, password) => {
       // Save the user's key to a file
       fs.writeFileSync(keyPath, JSON.stringify({ key: key }), "utf-8");
     }
+    const passwordFilePath = path.join(userDir, `${username}_passwords.json`);
+    if (!fs.existsSync(passwordFilePath)) {
+      // Create an empty JSON object and write it to the file
+      fs.writeFileSync(passwordFilePath, JSON.stringify({}), "utf-8");
+    }
 
     currentUser = username;
     console.log("Login Successful.");
@@ -131,9 +135,10 @@ const getEncryptionKey = (username) => {
   const keyPath = path.join(
     userInfoDir,
     "users",
-    username,
-    `${username}key.json`
+    currentUser,
+    `${username}_key.json`
   );
+  console.log("File Path for key: ", keyPath)
   if (fs.existsSync(keyPath)) {
     const keyContents = fs.readFileSync(keyPath, "utf-8");
     const keyData = JSON.parse(keyContents);
@@ -161,6 +166,7 @@ const generateStrongPassword = (length = 32) => {
 // TESTED AND WORKING
 // Loads passwords
 const loadPasswords = (username) => {
+  username = currentUser
   const passwordsPath = path.join(
     userInfoDir,
     "users",

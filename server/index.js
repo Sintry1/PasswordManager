@@ -24,7 +24,8 @@ const {
 app.use(cors());
 app.use(express.json());
 
-let passwordList = loadPasswords();
+let passwordList = {};
+let currentUser = "";
 
 // const JWT_SECRET = generateStrongPassword();
 
@@ -70,6 +71,8 @@ app.post("/login", (req, res) => {
     //   "Set-Cookie",
     //   cookie.serialize("token", token, { httpOnly: true })
     // );
+    currentUser = username;
+    passwordList = loadPasswords(username);
     res.status(200).json({ loggedIn: loggedIn });
   } else {
     console.log(`Login failed for username: ${username}`);
@@ -85,7 +88,6 @@ app.post("/createUser", (req, res) => {
 
 app.get("/loadPasswords/:username", (req, res) => {
   const username = req.params.username;
-  console.log("username is:", username);
   const passwordList = loadPasswords(username);
   res.send(passwordList);
 });
@@ -93,6 +95,7 @@ app.get("/loadPasswords/:username", (req, res) => {
 app.post("/addPassword", (req, res) => {
   const { site, password } = req.body;
   addPassword(site, password);
+  passwordList = loadPasswords(currentUser);
   res.send("Password created successfully");
 });
 

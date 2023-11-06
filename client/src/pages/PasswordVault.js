@@ -50,10 +50,12 @@ export default function PasswordVault() {
       site: site,
       password: password,
     }).then(() => {
-      setPasswordList([...passwordList, { site, password: password }]);
+      setPasswordList([{...passwordList, site, password: password }]);
       alert("Password added successfully");
       setSite("");
       setPassword("");
+    }).then(() => {
+      window.location.reload();
     });
   };
 
@@ -72,13 +74,14 @@ export default function PasswordVault() {
 
   const decryptAllPasswords = () => {
     const decryptionList = Object.keys(passwordList);
-    console.log(decryptionList);
+    console.log("DecryptionList: ",decryptionList);
     // Initialize an array to store promises
     const decryptionPromises = decryptionList.map((site) => {
       return Axios.post("http://localhost:3005/decryptPassword", {
         site: site,
       })
         .then((response) => {
+          console.log("Inside decrypt All", response.data)
           return { site: site, password: response.data };
         })
         .catch((error) => {
@@ -151,7 +154,7 @@ export default function PasswordVault() {
           )}
         </ul>
       </div>
-      <div>
+      <div className="PasswordList">
         <h1>Password List</h1>
         <table>
           <thead>
