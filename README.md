@@ -9,8 +9,8 @@ Do the same for the server folder to install all of the dependencies.
 
 Once done, in both terminals write 'npm start'. I would suggest starting the server first. You should see a message saying "Server is running" if done correctly.
 
-This projects runs nodemon to restart the server, so any accidental changes in the EncryptionHandler.js or index.js in the server will reload the server (even adding a whitespace character).
+This project runs nodemon to restart the server, so any accidental changes in the EncryptionHandler.js or index.js in the server will reload the server (even adding a whitespace character).
 
-SCREENSHOTS TO COME
+
 
 DISCUSSION OF SECURITY TO COME

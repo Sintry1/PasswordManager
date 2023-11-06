@@ -8,6 +8,7 @@ import "./PasswordVault.css"
 export default function PasswordVault() {
   const [site, setSite] = useState("");
   const [password, setPassword] = useState("");
+  const [generatedPassword, setGeneratedPassword] = useState("");
   const [passwordList, setPasswordList] = useState([]);
   const [decryptedPasswordList, setDecryptedPasswordList] = useState([]);
   const { username } = useParams();
@@ -105,12 +106,21 @@ export default function PasswordVault() {
     Axios.post("http://localhost:3005/generateStrongPassword").then(
       (response) => {
         const strongPassword = response.data;
-        alert(
-          "Here is your strong password. Copy it to the password field: " +
-            strongPassword
-        );
+        setGeneratedPassword(strongPassword);
+        // alert(
+        //   "Here is your strong password. Copy it to the password field: " +
+        //     strongPassword
+        // );
       }
     );
+  };
+
+  const handlePasswordChange = (e) => {
+    if (generatedPassword) {
+      // If a generated password exists, clear it when the user starts typing
+      setGeneratedPassword("");
+    }
+    setPassword(e.target.value);
   };
 
   return (
@@ -130,7 +140,8 @@ export default function PasswordVault() {
         className="Input"
           type="password"
           placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
+          value={generatedPassword || password}
+          onChange={handlePasswordChange}
         />
         <button className="Button" onClick={generateStrongPassword}>
           Generate a strong password
