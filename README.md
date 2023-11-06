@@ -13,5 +13,7 @@ This project runs nodemon to restart the server, so any accidental changes in th
 
 ![image](https://github.com/Sintry1/PasswordManager/assets/75076281/b4f47325-1c88-45b6-bda7-3148b33ce930)
 
+![image](https://github.com/Sintry1/PasswordManager/assets/75076281/f19f541a-ad17-49ac-bc08-89da14f1ba06)
+
 
 DISCUSSION OF SECURITY TO COME
