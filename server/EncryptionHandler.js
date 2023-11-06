@@ -161,13 +161,12 @@ const generateStrongPassword = (length = 32) => {
 // TESTED AND WORKING
 // Loads passwords
 const loadPasswords = (username) => {
-    const passwordsPath = path.join(
+  const passwordsPath = path.join(
     userInfoDir,
     "users",
     currentUser,
     `${username}_passwords.json`
   );
-  console.log(passwordsPath);
   if (fs.existsSync(passwordsPath)) {
     try {
       const json = fs.readFileSync(passwordsPath, "utf8");

@@ -9,30 +9,31 @@ export default function PasswordVault() {
   const [password, setPassword] = useState("");
   const [passwordList, setPasswordList] = useState([]);
   const [decryptedPasswordList, setDecryptedPasswordList] = useState([]);
-  const {username} = useParams();
+  const { username } = useParams();
 
   useEffect(() => {
-    console.log("Axios request not yet made",username)
-    Axios.get(`http://localhost:3005/loadPasswords/${username}`).then((response) => {
-      setPasswordList(response.data);
-      console.log(username);
-      if (response.data.length > 0) {
-        decryptAllPasswords();
+    console.log("Axios request not yet made", username);
+    Axios.get(`http://localhost:3005/loadPasswords/${username}`).then(
+      (response) => {
+        setPasswordList(response.data);
+        console.log(username);
+        if (response.data.length > 0) {
+          decryptAllPasswords();
+        }
       }
-    });
+    );
   }, [username]);
-    // // Retrieve the JWT token from the cookie
-    // const cookies = parse(document.cookie); // Parse the document's cookies
-    // const token = cookies.token; // Replace 'token' with your actual cookie name
+  // // Retrieve the JWT token from the cookie
+  // const cookies = parse(document.cookie); // Parse the document's cookies
+  // const token = cookies.token; // Replace 'token' with your actual cookie name
 
-    // if (token) {
-    //   // Call the function to retrieve the username from the JWT
-    //   const retrievedUsername = retrieveUsernameFromJWT(token);
-    //   if (retrievedUsername) {
-    //     setUsername(retrievedUsername);
-    //   }
-    // }
-  
+  // if (token) {
+  //   // Call the function to retrieve the username from the JWT
+  //   const retrievedUsername = retrieveUsernameFromJWT(token);
+  //   if (retrievedUsername) {
+  //     setUsername(retrievedUsername);
+  //   }
+  // }
 
   // const retrieveUsernameFromJWT = (token) => {
   //   try {

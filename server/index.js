@@ -34,7 +34,7 @@ let passwordList = loadPasswords();
 // };
 
 // const authenticateToken = (req, res, next) => {
-//   const cookies = cookie.parse(req.headers.cookie || "");  
+//   const cookies = cookie.parse(req.headers.cookie || "");
 //   const token = cookies.token;
 //   console.log("Token from cookies:", token);
 //   if (!token) {
@@ -61,7 +61,7 @@ app.get("/loadUsers", (req, res) => {
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
   console.log(`Received login request for username: ${username}`);
-  const loggedIn = login(username, password);;
+  const loggedIn = login(username, password);
   if (loggedIn) {
     console.log(`Login successful for username: ${username}`);
     // const token = generateToken(username);
@@ -70,7 +70,7 @@ app.post("/login", (req, res) => {
     //   "Set-Cookie",
     //   cookie.serialize("token", token, { httpOnly: true })
     // );
-    res.status(200).json({loggedIn: loggedIn});
+    res.status(200).json({ loggedIn: loggedIn });
   } else {
     console.log(`Login failed for username: ${username}`);
     res.status(401).send("Login failed. please try again.");
@@ -85,8 +85,8 @@ app.post("/createUser", (req, res) => {
 
 app.get("/loadPasswords/:username", (req, res) => {
   const username = req.params.username;
-  console.log("username is:", username); // Add this line to check the received username
-  const passwordList = loadPasswords(username)
+  console.log("username is:", username);
+  const passwordList = loadPasswords(username);
   res.send(passwordList);
 });
 
@@ -105,9 +105,9 @@ app.post("/decryptPassword", (req, res) => {
   const site = req.body.site;
   const encryptedPassword = passwordList[site].password;
   const decryptedPassword = decryptPassword(encryptedPassword);
-  res.status(200).json({decryptedPassword});
+  res.status(200).json({ decryptedPassword });
 });
 
 app.listen(PORT, () => {
-  console.log("server is running");
+  console.log("Server is running");
 });
