@@ -1,6 +1,7 @@
 import Axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import "./PasswordVault.css"
 // import { jwtDecode } from "jwt-decode";
 // import { parse } from "cookie";
 
@@ -113,31 +114,33 @@ export default function PasswordVault() {
   };
 
   return (
-    <div className="vault">
+    <div className="Vault">
       <div>
         <h1>Password vault for {username}</h1>
       </div>
-      <div>
+      <div className="Add">
         <h2>Add Password</h2>
         <input
+        className="Input"
           type="text"
-          placeholder="site"
+          placeholder="Site/Platform"
           onChange={(e) => setSite(e.target.value)}
         />
         <input
-          type="text"
+        className="Input"
+          type="password"
           placeholder="Password"
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button onClick={generateStrongPassword}>
+        <button className="Button" onClick={generateStrongPassword}>
           Generate a strong password
         </button>
-        <button onClick={() => addPassword(site, password)}>
+        <button className="Button"onClick={() => addPassword(site, password)}>
           Add Password
         </button>
       </div>
       <div>
-        <button onClick={decryptAllPasswords}>Decrypt all Passwords</button>
+        <button className="Button" onClick={decryptAllPasswords}>Decrypt all Passwords</button>
         <ul>
           {decryptedPasswordList.length > 0 ? (
             decryptedPasswordList.map((entry, index) => (

@@ -80,34 +80,45 @@ export default function Login() {
   //};
 
   return (
-    <div>
+    <div className="LoginPage">
       <div className="Login">
         <h2>Enter your login details here</h2>
         <input
+          className="Input"
           type="text"
           placeholder="Username"
           onChange={(e) => setUsername(e.target.value)}
         />
         <input
-          type="text"
+          className="Input"
+          type="password"
           placeholder="Password"
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button onClick={() => login(username, password)} />
+        <button className="Button" onClick={() => login(username, password)}>
+          Log in
+        </button>
       </div>
       <div className="Register">
         <h2>Not signed up yet? Register below</h2>
         <input
+          className="Input"
           type="text"
           placeholder="Register Username"
           onChange={(e) => setNewUser(e.target.value)}
         />
         <input
-          type="text"
+          className="Input"
+          type="password"
           placeholder="Register Password"
           onChange={(e) => setNewUserPassword(e.target.value)}
         />
-        <button onClick={() => addUser(newUser, newUserPassword)} />
+        <button
+          className="Button"
+          onClick={() => addUser(newUser, newUserPassword)}
+        >
+          Register
+        </button>
       </div>
     </div>
   );
