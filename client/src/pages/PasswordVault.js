@@ -1,123 +1,117 @@
-import Axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import "./PasswordVault.css"
-// import { jwtDecode } from "jwt-decode";
-// import { parse } from "cookie";
+import "./PasswordVault.css";
 
 export default function PasswordVault() {
+  const bcrypt = require("bcrypt");
+  let salt = "";
   const [site, setSite] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [generatedPassword, setGeneratedPassword] = useState("");
   const [passwordList, setPasswordList] = useState([]);
   const [decryptedPasswordList, setDecryptedPasswordList] = useState([]);
-  const { username } = useParams();
 
-  useEffect(() => {
-    console.log("Axios request not yet made", username);
-    Axios.get(`http://localhost:3005/loadPasswords/${username}`).then(
-      (response) => {
-        setPasswordList(response.data);
-        console.log(username);
-        if (response.data.length > 0) {
-          decryptAllPasswords();
-        }
-      }
-    );
-  }, [username]);
-  // // Retrieve the JWT token from the cookie
-  // const cookies = parse(document.cookie); // Parse the document's cookies
-  // const token = cookies.token; // Replace 'token' with your actual cookie name
+  useEffect(() => {}, []);
 
-  // if (token) {
-  //   // Call the function to retrieve the username from the JWT
-  //   const retrievedUsername = retrieveUsernameFromJWT(token);
-  //   if (retrievedUsername) {
-  //     setUsername(retrievedUsername);
-  //   }
-  // }
+  const hashMasterPassword = () => {
+    let password = prompt("Please enter your master password:");
+    const saltRounds = 10; // Specify the number of salt rounds
+    if (localStorage.getItem("Salt")) {
+      salt = localStorage.setItem("Salt");
+    } else {
+      salt = bcrypt.genSaltSync(saltRounds);
+      localStorage.setItem("Salt:", salt);
+    }
 
-  // const retrieveUsernameFromJWT = (token) => {
-  //   try {
-  //     const decoded = jwtDecode(token);
-  //     setUsername(decoded.username);
-  //   } catch (error) {
-  //     console.error("Error decoding JWT: ", error);
-  //     return null;
-  //   }
-  // };
+    const hashedPassword = bcrypt.hashSync(password, salt);
 
-  const addPassword = (site, password) => {
-    Axios.post("http://localhost:3005/addPassword", {
-      site: site,
-      password: password,
-    }).then(() => {
-      setPasswordList([{...passwordList, site, password: password }]);
-      alert("Password added successfully");
-      setSite("");
-      setPassword("");
-    }).then(() => {
-      window.location.reload();
-    });
+    return hashedPassword;
   };
 
-  const decryptPassword = (site) => {
-    Axios.post("http://localhost:3005/decryptPassword", {
-      site: site,
-    })
-      .then((response) => {
-        const decryptedPassword = response.data;
-        return decryptedPassword;
-      })
-      .catch((error) => {
-        console.error("Error decrypting password: ", error);
-      });
+  const generateStrongPassword = (length = 32) => {
+    // Define character set character sets to create the full character pool
+    const chars =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+{}[]|:"<>?-=/\\';
+
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      // Randomly select a character from the character pool
+      const randomIndex = Math.floor(Math.random() * chars.length);
+      password += chars.charAt(randomIndex);
+    }
+    return password;
   };
 
-  const decryptAllPasswords = () => {
-    const decryptionList = Object.keys(passwordList);
-    console.log("DecryptionList: ",decryptionList);
-    // Initialize an array to store promises
-    const decryptionPromises = decryptionList.map((site) => {
-      return Axios.post("http://localhost:3005/decryptPassword", {
+  const loadPasswords = () => {
+    const storedPasswords = localStorage.getItem("passwordList")
+
+    const passwordList = storedPasswords ? JSON.parse(storedPasswords) : {};
+
+    return passwordList;
+  };
+
+  const addPassword = (site, username, password) => {
+    const passwordList = loadPasswords();
+    if (passwordList[site]) {
+      console.log(`A password for ${site} already exists.`);
+    } else {
+      const encryptedPassword = encryptInput(password);
+      passwordList[site] = {
         site: site,
-      })
-        .then((response) => {
-          console.log("Inside decrypt All", response.data)
-          return { site: site, password: response.data };
-        })
-        .catch((error) => {
-          console.error(`Error decrypting password for ${site}: `, error);
-          return { site: site, password: "Decryption Error" };
-        });
-    });
-
-    Promise.all(decryptionPromises)
-      .then((decryptedPasswords) => {
-        console.log("Decrypted Passwords:", decryptedPasswords);
-        setDecryptedPasswordList(decryptedPasswords);
-      })
-      .catch((error) => {
-        console.error("Error decrypting passwords: ", error);
-      });
+        username: username,
+        password: encryptedPassword,
+      };
+      localStorage.setItem("passwordList", JSON.stringify(passwordList))
+      console.log("Password successfully added.");
+    }
   };
 
-  const generateStrongPassword = () => {
-    Axios.post("http://localhost:3005/generateStrongPassword").then(
-      (response) => {
-        const strongPassword = response.data;
-        setGeneratedPassword(strongPassword);
-        // alert(
-        //   "Here is your strong password. Copy it to the password field: " +
-        //     strongPassword
-        // );
-      }
+  const encryptInput = (password) => {
+    const key = crypto
+      .pbkdf2Sync(hashMasterPassword(), localStorage.getItem("Salt"), 100000, 32, "sha256")
+      .toString("base64");
+
+    const iv = Buffer.from(crypto.randomBytes(16));
+    const cipher = crypto.createCipheriv(
+      "aes-256-ctr",
+      Buffer.from(key, "base64"),
+      iv
     );
+
+    const encryptedPassword = Buffer.concat([
+      cipher.update(password, "utf-8"),
+      cipher.final(),
+    ]);
+
+    return {
+      iv: iv.toString("hex"),
+      password: encryptedPassword.toString("hex"),
+    };
+  };
+
+  // TESTED AND WORKING
+  const decryptInput = (encryption) => {
+    const key = crypto
+      .pbkdf2Sync(hashMasterPassword(), localStorage.getItem("Salt"), 100000, 32, "sha256")
+      .toString("base64");
+
+    const iv = Buffer.from(encryption.iv, "hex");
+    const decipher = crypto.createDecipheriv(
+      "aes-256-ctr",
+      Buffer.from(key, "base64"),
+      iv
+    );
+
+    const decryptedPassword = Buffer.concat([
+      decipher.update(Buffer.from(encryption.password, "hex")),
+      decipher.final(),
+    ]);
+
+    return decryptedPassword.toString("utf-8");
   };
 
   const handlePasswordChange = (e) => {
     if (generatedPassword) {
-      // If a generated password exists, clear it when the user starts typing
       setGeneratedPassword("");
     }
     setPassword(e.target.value);
@@ -131,13 +125,19 @@ export default function PasswordVault() {
       <div className="Add">
         <h2>Add Password</h2>
         <input
-        className="Input"
+          className="Input"
           type="text"
           placeholder="Site/Platform"
           onChange={(e) => setSite(e.target.value)}
         />
+         <input
+          className="Input"
+          type="text"
+          placeholder="Username"
+          onChange={(e) => setSite(e.target.value)}
+        />
         <input
-        className="Input"
+          className="Input"
           type="password"
           placeholder="Password"
           value={generatedPassword || password}
@@ -146,12 +146,14 @@ export default function PasswordVault() {
         <button className="Button" onClick={generateStrongPassword}>
           Generate a strong password
         </button>
-        <button className="Button"onClick={() => addPassword(site, password)}>
+        <button className="Button" onClick={() => addPassword(site, username, password)}>
           Add Password
         </button>
       </div>
       <div>
-        <button className="Button" onClick={decryptAllPasswords}>Decrypt all Passwords</button>
+        <button className="Button" onClick={() => {}}>
+          Decrypt all Passwords
+        </button>
         <ul>
           {decryptedPasswordList.length > 0 ? (
             decryptedPasswordList.map((entry, index) => (
