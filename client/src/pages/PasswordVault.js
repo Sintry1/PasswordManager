@@ -429,6 +429,7 @@ export default function PasswordVault() {
           isOpen={modalOpen}
           contentLabel="Confirmation Modal"
           className="Modal"
+          ariaHideApp={false}
         >
           <div>
             <p>Are you sure you want to clear all passwords stored?</p>
