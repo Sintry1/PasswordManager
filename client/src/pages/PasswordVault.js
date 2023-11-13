@@ -14,16 +14,36 @@ export default function PasswordVault() {
 
   useEffect(() => {
     loadPasswords();
-    sessionStorage.clear();
+    // const testEncryption = async () => {
+    //   const masterKey = await hashMasterPassword();
+    //   const iv = crypto.getRandomValues(new Uint8Array(16));
+    //   const plaintext = new TextEncoder().encode("Hello, world!");
+
+    //   const encryptedData = await crypto.subtle.encrypt(
+    //     { name: "AES-GCM", iv: iv },
+    //     masterKey,
+    //     plaintext
+    //   );
+
+    //   const decryptedData = await crypto.subtle.decrypt(
+    //     { name: "AES-GCM", iv: iv },
+    //     masterKey,
+    //     encryptedData
+    //   );
+
+    //   console.log("Decrypted Data:", new TextDecoder().decode(decryptedData));
+    // };
+
+    // testEncryption();
   }, []);
 
   const loadPasswords = () => {
     const storedPasswords = localStorage.getItem("passwordList");
-    const passwordList = storedPasswords ? JSON.parse(storedPasswords) : {};
+    const currentPasswordList = storedPasswords ? JSON.parse(storedPasswords) : {};
 
     // Reconstruct the proper structure
-    for (const site in passwordList) {
-      const entry = passwordList[site];
+    for (const site in currentPasswordList) {
+      const entry = currentPasswordList[site];
       if (entry.iv && entry.password) {
         entry.password = {
           iv: new Uint8Array(entry.iv),
@@ -32,7 +52,9 @@ export default function PasswordVault() {
       }
     }
 
-    setPasswordList(passwordList);
+    setPasswordList((prevPasswordList) => {
+      return{prevPasswordList, ...currentPasswordList}
+    });
     console.log(passwordList);
     return passwordList;
   };
@@ -119,8 +141,10 @@ export default function PasswordVault() {
       currentPasswordList[site] = {
         site: site,
         username: username,
-        iv: Array.from(encryptedPassword.iv),
-        password: Array.from(encryptedPassword.password),
+        password: {
+          iv: Array.from(encryptedPassword.iv),
+          password: Array.from(encryptedPassword.password),
+        },
       };
 
       // Update the state with the new password list
@@ -128,6 +152,7 @@ export default function PasswordVault() {
 
       // Update localStorage if necessary
       localStorage.setItem("passwordList", JSON.stringify(currentPasswordList));
+      loadPasswords();
 
       console.log("Password successfully added.");
     }
@@ -266,94 +291,155 @@ export default function PasswordVault() {
   //   }
   // };
 
-  const decryptInput = async (encryption, masterKey) => {
-    const keyMaterial = await crypto.subtle.exportKey("raw", masterKey);
-
-  const key = await crypto.subtle.deriveKey(
-    {
-      name: "PBKDF2",
-      salt: new TextEncoder().encode(localStorage.getItem("Salt")),
-      iterations: 100000,
-      hash: { name: "SHA-256" },
-    },
-    await crypto.subtle.importKey(
-      "raw",
-      keyMaterial,
-      { name: "PBKDF2" },
-      false,
-      ["deriveKey"]
-    ),
-    { name: "AES-GCM", length: 256 },
-    true,
-    ["encrypt", "decrypt"]
-  );
-
-  const iv = crypto.getRandomValues(new Uint8Array(16));
-  console.log("IV:", iv);
-
-  const cipher = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv: iv },
-    key,
-    new TextEncoder().encode(password)
-  );
-
-  console.log("Encrypted Password:", cipher);
-
-  try {
-    const decryptedPassword = await crypto.subtle.decrypt(
-      {
-        name: "AES-GCM",
-        iv: iv,
-      },
-      key,
-      cipher
-    );
-
-    console.log("Decrypted Password:", new TextDecoder().decode(decryptedPassword));
-
-    return {
-      iv: iv,
-      password: new Uint8Array(cipher),
+  //const decryptInput = async (encryption, masterKey) => {
+    const decryptInput = async (encryption, masterKey) => {
+      try {
+        const keyMaterial = await crypto.subtle.exportKey("raw", masterKey);
+    
+        const key = await crypto.subtle.deriveKey(
+          {
+            name: "PBKDF2",
+            salt: new TextEncoder().encode(localStorage.getItem("Salt")),
+            iterations: 100000,
+            hash: { name: "SHA-256" },
+          },
+          await crypto.subtle.importKey(
+            "raw",
+            keyMaterial,
+            { name: "PBKDF2" },
+            false,
+            ["deriveKey"]
+          ),
+          { name: "AES-GCM", length: 256 },
+          true,
+          ["encrypt", "decrypt"]
+        );
+    
+        const iv = new Uint8Array(encryption.iv);
+        const encryptedPassword = new Uint8Array(encryption.password);
+    
+        const decryptedPasswordBuffer = await crypto.subtle.decrypt(
+          { name: "AES-GCM", iv: iv },
+          key,
+          encryptedPassword
+        );
+    
+        // Convert the decrypted password ArrayBuffer to a string
+        const decryptedPasswordString = new TextDecoder().decode(
+          decryptedPasswordBuffer
+        );
+    
+        console.log("Decrypted Password String:", decryptedPasswordString);
+    
+        return decryptedPasswordString;
+      } catch (error) {
+        console.error("Error during decryption:", error);
+        throw error;
+      }
     };
-  } catch (error) {
-    console.error("Error during decryption:", error);
-    throw error;
-  }
-  };
+  //   const plaintext = "Hello, world!";
+  //   const iv = crypto.getRandomValues(new Uint8Array(16));
+
+  //   const encryptedData = await crypto.subtle.encrypt(
+  //     { name: "AES-GCM", iv: iv },
+  //     masterKey,
+  //     new TextEncoder().encode(plaintext)
+  //   );
+
+  //   const decryptedData = await crypto.subtle.decrypt(
+  //     { name: "AES-GCM", iv: iv },
+  //     masterKey,
+  //     encryptedData
+  //   );
+
+  //   console.log("Decrypted Data from test block:", new TextDecoder().decode(decryptedData));
+  //   try {
+  //     const keyMaterial = await crypto.subtle.exportKey("raw", masterKey);
+
+  //     console.log("Exported Key Material:", keyMaterial);
+
+  //     const key = await crypto.subtle.deriveKey(
+  //       {
+  //         name: "PBKDF2",
+  //         salt: new TextEncoder().encode(localStorage.getItem("Salt")),
+  //         iterations: 100000,
+  //         hash: { name: "SHA-256" },
+  //       },
+  //       await crypto.subtle.importKey(
+  //         "raw",
+  //         keyMaterial,
+  //         { name: "PBKDF2" },
+  //         false,
+  //         ["deriveKey"]
+  //       ),
+  //       { name: "AES-GCM", length: 256 },
+  //       true,
+  //       ["encrypt", "decrypt"]
+  //     );
+
+  //     console.log("Derived Key:", key);
+
+  //     const iv = new Uint8Array(encryption.iv);
+  //     const encryptedPassword = new Uint8Array(encryption.password);
+
+  //     console.log("Encrypted Password:", encryptedPassword);
+
+  //     // Use crypto.subtle.decrypt to decrypt the password
+  //     const decryptedPassword = await crypto.subtle.decrypt(
+  //       {
+  //         name: "AES-GCM",
+  //         iv: iv,
+  //       },
+  //       masterKey,
+  //       encryptedPassword
+  //     );
+
+  //     console.log("Decrypted Password ArrayBuffer:", decryptedPassword);
+
+  //     // Convert the decrypted password ArrayBuffer to a string
+  //     const decryptedPasswordString = new TextDecoder().decode(
+  //       decryptedPassword
+  //     );
+
+  //     console.log("Decrypted Password String:", decryptedPasswordString);
+
+  //     return decryptedPasswordString;
+  //   } catch (error) {
+  //     console.error("Error during decryption:", error);
+  //     throw error;
+  //   }
+  // };
 
   const decryptStoredPassword = async (site) => {
     // Derive the master key
-  const masterKey = await hashMasterPassword();
+    const masterKey = await hashMasterPassword();
 
-  // Retrieve the current password list
-  const currentPasswordList = { ...passwordList };
+    // Retrieve the current password list
+    const currentPasswordList = { ...passwordList };
 
-  // Find the password entry for the specified site
-  const encryptedPasswordObject = currentPasswordList[site]?.password;
+    // Find the password entry for the specified site
+    const encryptedPasswordObject = currentPasswordList[site]?.password;
 
-  console.log("encryptedPassword Object inside decryptStoredPassword:", encryptedPasswordObject);
+    if (encryptedPasswordObject) {
+        try {
+            console.log("Encrypted Password Object inside decryptStoredPassword try block:", encryptedPasswordObject);
 
-  if (encryptedPasswordObject) {
-    try {
-      console.log("Encrypted Password Object:", encryptedPasswordObject);
+            // Decrypt using the derived master key
+            const decryptedPassword = await decryptInput(
+                encryptedPasswordObject,
+                masterKey
+            );
 
-      // Decrypt using the derived master key
-      const decryptedPassword = await decryptInput(
-        encryptedPasswordObject,
-        masterKey
-      );
+            console.log("Decrypted Password:", decryptedPassword);
 
-      console.log("Decrypted Password:", decryptedPassword);
-
-      return decryptedPassword;
-    } catch (error) {
-      console.error("Error decrypting password:", error);
-      console.error("Encrypted Password Object:", encryptedPasswordObject);
+            return decryptedPassword;
+        } catch (error) {
+            console.error("Error decrypting password:", error.message);
+        }
+    } else {
+        alert(`No password found for ${site}`);
     }
-  } else {
-    alert(`No password found for ${site}`);
-  }
-  };
+};
 
   const handlePasswordChange = (e) => {
     if (generatedPassword) {
