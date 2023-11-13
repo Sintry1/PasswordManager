@@ -1,35 +1,33 @@
 # PasswordManager
 Small React/Node project built as a password manager.
+Passwords are stored in localStorage of the browser.
 
 To run the project, clone the whole repository to your machine and navigate to it using your IDE.
 
 Open a terminal navigate to the client folder and run the command npm install.
-
 
 Once done, in the terminal write 'npm start'.
 
 ![image](https://github.com/Sintry1/PasswordManager/assets/75076281/4799708d-f4f7-4cbb-9135-830293da9775)
 Entry point to the application is the password vault which contains a list of all of their passwords. This is currently logged to the console.
 
-![image](https://github.com/Sintry1/PasswordManager/assets/75076281/7c9c69fc-b959-41cf-83c8-e4e86eaad788)
-After entering the site and pressing genereate strong password (which autofills the password field), the user then presses add, and if they password is successfully added, they are alerted my an alert() function.
+![image](https://github.com/Sintry1/PasswordManager/assets/75076281/22aa8132-9833-4d62-9678-60067eb5e36c)
+After entering the site and username a user can choose to generate a strong password (which autofills the password field), or enter one of their own. 
 
-![image](https://github.com/Sintry1/PasswordManager/assets/75076281/2482f3ff-d91f-4473-aa41-d025049b20aa)
+![image](https://github.com/Sintry1/PasswordManager/assets/75076281/5acbb043-6812-47a7-9119-5f9df1396b2b)
+Once the user presses add, they will be a prompted for a master password. This master password is used to derive the secret key for the encryption of the password, so it needs to be memorable for the user for the decryption process.
+
+![image](https://github.com/Sintry1/PasswordManager/assets/75076281/b016bb81-9bbc-46ac-a7fb-23f946ee89fd)
 After adding a password, the password can be seen in the Password List section, with the Site unencrypted, but the password remaining encrypted.
 
-![image](https://github.com/Sintry1/PasswordManager/assets/75076281/89a0e09a-b703-4dbd-9adf-cd26cf111619)
-Once a user presses Decrypt all Passwords, the server decrypts all of the passwords that are present in the file for the user and displays their original plain text value.
+To decrypt a password, a user must enter the site name for the site they wish to decrypt the password. Once they press Decrypt Password, they will be prompted for the master password which was entered when the password for the site was added.
+![image](https://github.com/Sintry1/PasswordManager/assets/75076281/4de7c2a2-3bdd-4f88-94eb-c8a71aeb5f7b)
+Assuming the master password matches the one entered in encryption, the user will receive a decrypted password back in the console.
 
-The security for this project is good in some areas, but severely lacking in others. As a web application, there was a need for passing data between the inputs on the client side and the server. While this data is stored in an encrypted or hashed fashion (dependent on which data it is), it is more secure on the server side, however due to time constraints, the data is exposed on the client side via the network tab as a payload with requests. Bcrypt is used to hash the master password and username together with a work factor of 100, to securely store the password in a JSON file on the server, however as discussed before, this is exposed to the client side network requests. One solution to this would be using HTTPS instead of HTTP to encrypt the communication. There was an attempt at using JWT to store the data in a token in cookies, but unfortunately, due to time constraints, I was not able to implement this in a working fashion, though the remnants of it are still present in the code, but commented out. As the program only runs on the local machine and does not share data between machines, this is less of a concern, however in a production environment, all of the data would need to be hashed correctly in order to be considered secure. 
+It is important to note that the first password in the passwordList will not be decryptable for some reason, and therefore the first password should be a dummy password with dummy values. Unfortunately I didn't have time to implement this in code though.
 
-Overall, while the password manager works and will store the passwords in their encrypted and hashed forms, there are a number of fairly large security concerns if it were to be deployed;
+The security for this project is good in some areas, but lacking in others. As a client only application that runs only on the local machines and stores passwords in localStorage, the opportunity for outside attackers to gain access to the information is limited.
 
-First and foremost, exposure of the data in the payload would need to be prevented by implementing something like OAuth and OpenId Connect. 
+It is still vulnerable to someone looking over your shoulder however when entering the master password.
 
-Second, as the data is stored in JSON files, it would be more secure if the data were stored in a database and the database inputs sanitised to ensure that not SQL Injection attacks could take place.
-
-Third, the data should be encrypted before it is sent from the client to the server. An attempt was made at this, but without enough time to properly debug it, I could not get it to work.
-
-Fourth, the key is stored in a file under the same directory as the password file which stores the passwords for each user in their encrypted format. Instead, the key should be generated each time a user logs in so that it cannot be stolen by anyone who gains access to our file system.
-
-Perhaps another framework would have been more suitable that doesn't make use of a web application client, however due to the time, I went with what I was comfortable with. 
+Overall, while the password manager works and will store the passwords in their encrypted form, there are a number of security concerns. Many of these were addressed since removing the server.
