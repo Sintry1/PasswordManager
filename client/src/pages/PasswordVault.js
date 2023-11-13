@@ -164,8 +164,6 @@ export default function PasswordVault() {
       new TextEncoder().encode(password)
     );
 
-    console.log("Encrypted Password:", cipher);
-    console.log("IV:", iv);
 
     return {
       iv: iv,
@@ -210,8 +208,6 @@ export default function PasswordVault() {
         decryptedPasswordBuffer
       );
 
-      console.log("Decrypted Password String:", decryptedPasswordString);
-
       return decryptedPasswordString;
     } catch (error) {
       console.error("Error during decryption:", error);
@@ -231,10 +227,6 @@ export default function PasswordVault() {
 
     if (encryptedPasswordObject) {
       try {
-        console.log(
-          "Encrypted Password Object inside decryptStoredPassword try block:",
-          encryptedPasswordObject
-        );
 
         // Decrypt using the derived master key
         const decryptedPassword = await decryptInput(
