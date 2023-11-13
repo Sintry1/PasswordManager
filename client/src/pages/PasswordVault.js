@@ -40,7 +40,7 @@ export default function PasswordVault() {
   const loadPasswords = () => {
     const storedPasswords = localStorage.getItem("passwordList");
     const currentPasswordList = storedPasswords ? JSON.parse(storedPasswords) : {};
-
+  
     // Reconstruct the proper structure
     for (const site in currentPasswordList) {
       const entry = currentPasswordList[site];
@@ -51,12 +51,10 @@ export default function PasswordVault() {
         };
       }
     }
-
-    setPasswordList((prevPasswordList) => {
-      return{prevPasswordList, ...currentPasswordList}
-    });
-    console.log(passwordList);
-    return passwordList;
+  
+    setPasswordList(currentPasswordList);
+    console.log(currentPasswordList);
+    return currentPasswordList;
   };
 
   const hashMasterPassword = async () => {
@@ -93,7 +91,7 @@ export default function PasswordVault() {
     );
 
     // const exportedKey = await crypto.subtle.exportKey("raw", derivedKey);
-    sessionStorage.setItem("MasterKeyHash", JSON.stringify(derivedKey));
+    // sessionStorage.setItem("MasterKeyHash", JSON.stringify(derivedKey));
     return derivedKey;
   };
 
